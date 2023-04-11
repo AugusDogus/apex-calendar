@@ -1,6 +1,7 @@
 FROM node:18-alpine AS base
 
-RUN apk add --no-cache libc6-compat curl 
+RUN apk add --no-cache libc6-compat curl chromium
+
 RUN curl -L https://unpkg.com/@pnpm/self-installer | node
 WORKDIR /app
 
