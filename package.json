@@ -1,0 +1,25 @@
+{
+  "name": "apex-calendar",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx ./src/app.ts",
+    "dev": "dotenv tsx watch ./src/app.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.9.0",
+    "puppeteer": "^19.8.5",
+    "tsx": "^3.12.6"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "@types/prettier": "^2.7.2",
+    "dotenv": "^16.0.3",
+    "dotenv-cli": "^7.2.1",
+    "prettier": "^2.8.7"
+  }
+}
