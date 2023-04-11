@@ -1,6 +1,4 @@
-FROM node:18.15.0-alpine AS base
-
-RUN apk add --no-cache libc6-compat curl chromium
+FROM satantime/puppeteer-node:18.15-buster AS base
 
 RUN corepack enable
 WORKDIR /app
