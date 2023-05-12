@@ -70,8 +70,6 @@ const handleCommands = async ({ client, db }: Props) => {
           content: `Monitoring is already started in <#${guild.channelId}>!`,
         });
       } else {
-        // Check to see if we can send messages in the channel
-
         // Get the latest calendar image
         const image = await getCalendarImage();
 
@@ -111,6 +109,8 @@ const handleCommands = async ({ client, db }: Props) => {
       // Reply to the interaction
       await interaction.reply({ content: 'Monitoring stopped!', ephemeral: true });
     } else if (interaction.commandName === 'refresh') {
+      await interaction.deferReply({ ephemeral: true });
+
       // Make sure there is a guild id
       if (interaction.guildId === undefined || interaction.guildId === null) return;
 
@@ -119,7 +119,7 @@ const handleCommands = async ({ client, db }: Props) => {
 
       if (guild === null) {
         // Guild is not in database, reply to the interaction
-        await interaction.reply({ content: 'Monitoring is not started!', ephemeral: true });
+        await interaction.editReply({ content: 'Monitoring is not started!' });
         return;
       }
 
@@ -133,7 +133,7 @@ const handleCommands = async ({ client, db }: Props) => {
       await message.edit({ files: [image] });
 
       // Reply to the interaction
-      await interaction.reply({ content: 'Calendar refreshed!', ephemeral: true });
+      await interaction.followUp({ content: 'Calendar refreshed!', ephemeral: true });
     }
   });
 };
