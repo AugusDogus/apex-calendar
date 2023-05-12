@@ -4,14 +4,7 @@ import { Props } from '../helpers/helpers';
 import { getCalendarImage } from '../puppeteer/getImage';
 
 export const init = async ({ client, db }: Props) => {
-  // Get all the commands
-  const commands = await client.application?.commands.fetch();
-
-  if (commands === undefined || commands === null || !commands.size) {
-    // No commands found, create them
-    await addCommands(client);
-  }
-
+  await addCommands(client);
   await handleCommands({ client, db });
 };
 
