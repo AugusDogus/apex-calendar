@@ -17,4 +17,4 @@ client.on('ready', async () => {
 });
 
 // Login to discord
-client.login(env.token);
+client.login(env.DISCORD_TOKEN);

@@ -1,7 +1,6 @@
 import { ApplicationCommandOptionType, ChannelType, Client, PermissionsBitField } from 'discord.js';
 import { getChannel } from './getChannel';
 import { Props } from '../helpers/helpers';
-import { env } from '../env';
 import { getCalendarImage } from '../puppeteer/getImage';
 
 export const init = async ({ client, db }: Props) => {

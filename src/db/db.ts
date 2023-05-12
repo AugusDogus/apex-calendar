@@ -1,4 +1,6 @@
 import sqlite3 from 'sqlite3';
+import { env } from '../env';
+import path from 'path';
 
 type Guild = {
   id: string;
@@ -10,7 +12,7 @@ export class Database {
   private db: sqlite3.Database;
 
   constructor() {
-    this.db = new sqlite3.Database('./db.sqlite3');
+    this.db = new sqlite3.Database(path.join(env.DATABASE_PATH, 'sqlite.db'));
     this.createTable();
   }
 

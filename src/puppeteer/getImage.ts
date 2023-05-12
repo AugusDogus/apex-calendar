@@ -5,7 +5,7 @@ import { env } from '../env';
 export const getCalendarImage = async () => {
   const browser = await getBrowser();
   const page = await browser.newPage();
-  await page.goto(env.url);
+  await page.goto(env.CALENDAR_URL);
   await page.mouse.click(1000, 1000);
   const screenshot = await page.screenshot({ clip: { x: 46, y: 167, width: 1057, height: 780 } });
 
