@@ -6,19 +6,7 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/augusdogus/apex-calendar:latest
-  publish:
-    needs: build
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
@@ -26,7 +14,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push Docker image to GitHub Container Registry
         uses: docker/build-push-action@v2
         with:
