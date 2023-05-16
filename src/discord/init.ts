@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, ChannelType, Client, PermissionsBitField } from 'discord.js';
-import { getChannel } from './getChannel';
 import { Props } from '../helpers/helpers';
 import { getCalendarImage } from '../puppeteer/getImage';
+import { getChannel } from './getChannel';
 
 export const init = async ({ client, db }: Props) => {
   await addCommands(client);
@@ -12,10 +12,12 @@ const addCommands = async (client: Client) => {
   await client.application?.commands.create({
     name: 'start',
     description: 'Start calendar monitoring',
+    defaultMemberPermissions: [PermissionsBitField.Flags.KickMembers],
   });
   await client.application?.commands.create({
     name: 'stop',
     description: 'Stop calendar monitoring',
+    defaultMemberPermissions: [PermissionsBitField.Flags.KickMembers],
     options: [
       {
         name: 'delete',
@@ -28,6 +30,7 @@ const addCommands = async (client: Client) => {
   await client.application?.commands.create({
     name: 'refresh',
     description: 'Refresh the calendar',
+    defaultMemberPermissions: [PermissionsBitField.Flags.KickMembers],
   });
 };
 
