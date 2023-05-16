@@ -26,6 +26,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          ref: latest
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
