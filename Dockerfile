@@ -21,7 +21,6 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY src ./src
 COPY package.json .
-COPY .env .
 
 # Create directory for SQLite database
 RUN mkdir -p data && chown bun:bun data
