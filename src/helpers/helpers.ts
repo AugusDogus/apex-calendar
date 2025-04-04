@@ -1,14 +1,16 @@
-import { getChannel } from '../discord/getChannel';
-import { Client, ChannelType, TextChannel } from 'discord.js';
+import { ChannelType, Client, TextChannel } from 'discord.js';
+import { CalendarService } from '../calendar/service';
 import type { Database } from '../db/db';
-import { getCalendarImage } from '../puppeteer/getImage';
+import { getChannel } from '../discord/getChannel';
 import { env } from '../env';
 
 export type Props = { client: Client; db: Database };
 
+const calendarService = new CalendarService();
+
 export const checkCalendar = async ({ client, db }: Props) => {
   // Get the calendar image
-  const image = await getCalendarImage();
+  const image = await calendarService.getCalendarImage();
 
   // Get the guilds from the database
   const guilds = await db.getAll();

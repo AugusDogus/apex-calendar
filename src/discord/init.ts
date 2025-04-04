@@ -1,7 +1,9 @@
-import { ApplicationCommandOptionType, ChannelType, Client, PermissionsBitField } from 'discord.js';
+import { ApplicationCommandOptionType, ChannelType, Client, MessageFlags, PermissionsBitField } from 'discord.js';
+import { CalendarService } from '../calendar/service';
 import { Props } from '../helpers/helpers';
-import { getCalendarImage } from '../puppeteer/getImage';
 import { getChannel } from './getChannel';
+
+const calendarService = new CalendarService();
 
 export const init = async ({ client, db }: Props) => {
   await addCommands(client);
@@ -47,7 +49,7 @@ const handleCommands = async ({ client, db }: Props) => {
     if (!interaction?.guild?.members.me?.permissionsIn(interaction.channelId).has(permissions)) {
       await interaction.reply({
         content: 'I do not have permission to send messages in this channel',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -59,7 +61,7 @@ const handleCommands = async ({ client, db }: Props) => {
 
     // Check if the command is start or stop
     if (interaction.commandName === 'start') {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       // Make sure there is a guild id
       if (interaction.guildId === undefined || interaction.guildId === null) return;
@@ -74,7 +76,7 @@ const handleCommands = async ({ client, db }: Props) => {
         });
       } else {
         // Get the latest calendar image
-        const image = await getCalendarImage();
+        const image = await calendarService.getCalendarImage();
 
         // Send the image to the channel
         const message = await channel.send({ files: [image] });
@@ -94,7 +96,7 @@ const handleCommands = async ({ client, db }: Props) => {
 
       if (guild === null) {
         // Guild is not in database, reply to the interaction
-        await interaction.reply({ content: 'Monitoring is not started!', ephemeral: true });
+        await interaction.reply({ content: 'Monitoring is not started!', flags: MessageFlags.Ephemeral });
         return;
       }
 
@@ -110,9 +112,9 @@ const handleCommands = async ({ client, db }: Props) => {
       db.remove(interaction.guildId);
 
       // Reply to the interaction
-      await interaction.reply({ content: 'Monitoring stopped!', ephemeral: true });
+      await interaction.reply({ content: 'Monitoring stopped!', flags: MessageFlags.Ephemeral });
     } else if (interaction.commandName === 'refresh') {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       // Make sure there is a guild id
       if (interaction.guildId === undefined || interaction.guildId === null) return;
@@ -127,7 +129,7 @@ const handleCommands = async ({ client, db }: Props) => {
       }
 
       // Get the latest calendar image
-      const image = await getCalendarImage();
+      const image = await calendarService.getCalendarImage();
 
       // Get the message
       const message = await channel.messages.fetch(guild.messageId);
@@ -136,7 +138,7 @@ const handleCommands = async ({ client, db }: Props) => {
       await message.edit({ files: [image] });
 
       // Reply to the interaction
-      await interaction.followUp({ content: 'Calendar refreshed!', ephemeral: true });
+      await interaction.followUp({ content: 'Calendar refreshed!', flags: MessageFlags.Ephemeral });
     }
   });
 };

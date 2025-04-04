@@ -3,15 +3,10 @@ import { z } from 'zod';
 
 export const env = createEnv({
   server: {
-    CALENDAR_URL: z
-      .string()
-      .optional()
-      .default('https://docs.google.com/spreadsheets/d/1Ca_ixagdxMgSn9zeT8ZBwJmgtTt9i3wR59BfV1htkPY'),
+    CALENDAR_ID: z.string().optional().default('86b19402-2c15-4a33-9102-2b6a34ac6699'),
     DISCORD_TOKEN: z.string(),
     interval: z.coerce.number().int().positive().optional().default(60),
     DATABASE_PATH: z.string().optional().default('./'),
   },
-  client: {},
-  clientPrefix: '',
   runtimeEnv: process.env,
 });
