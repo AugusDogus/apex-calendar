@@ -14,7 +14,7 @@
 
 ## About
 
-Apex Calendar Bot is a Discord bot that helps you keep track of Apex Legends events by displaying and automatically updating a calendar in your server. The bot fetches event data and renders a beautiful calendar view that updates periodically.
+Apex Calendar Bot is a Discord bot that helps you keep track of Apex Legends events by displaying and automatically updating a calendar in your server. The bot fetches event data from [Oversight Esports](https://oversightesports.com/calendar/) and renders a beautiful calendar view that updates periodically.
 
 ## Features
 
