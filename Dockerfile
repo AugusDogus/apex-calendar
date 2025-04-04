@@ -22,9 +22,6 @@ COPY --from=install /temp/prod/node_modules node_modules
 COPY src ./src
 COPY package.json .
 
-# Create directory for SQLite database
-RUN mkdir -p data && chown bun:bun data
-
 # run the app
 USER bun
 ENTRYPOINT [ "bun", "start" ]
