@@ -9,7 +9,9 @@
   </a>
   <br>
   <br>
-  <img src=".github/assets/example.png" alt="Example Calendar" width="800">
+  <a href="https://raw.githubusercontent.com/AugusDogus/apex-calendar/refs/heads/main/.github/assets/example.png">
+    <img src=".github/assets/example.png" alt="Example Calendar" width="800">
+  </a>
 </div>
 
 ## About
