@@ -1,5 +1,37 @@
 import { z } from 'zod';
 
+// Parameters interface for calendar fetching
+export interface CalendarParams {
+  day: number;
+  month: number;
+  year: number;
+  calendarId: string;
+}
+
+// Interface for event description responses
+export interface EventDescription {
+  success: boolean;
+  data: {
+    description: string;
+    image: boolean | string;
+  };
+}
+
+// Interface for calendar object from the page
+export interface CalendarObj {
+  nonce: string;
+  ajax_url: string;
+  strings: {
+    events_on: string;
+    this_month: string;
+    this_week: string;
+    today: string;
+  };
+  settings: {
+    sow: number;
+  };
+}
+
 // Schema for the calendar JSON structure
 export const CalendarSchema = z.object({
   success: z.boolean(),
@@ -31,4 +63,4 @@ export const CalendarEventSchema = z.object({
 });
 
 export type CalendarResponse = z.infer<typeof CalendarSchema>;
-export type CalendarEvent = z.infer<typeof CalendarEventSchema>;
+export type CalendarEvent = z.infer<typeof CalendarEventSchema>; 

@@ -1,23 +1,19 @@
 import * as cheerio from 'cheerio';
-import { CalendarEvent, CalendarEventSchema, CalendarSchema } from './schemas';
-
-interface CalendarParams {
-  day: number;
-  month: number;
-  year: number;
-  calendarId: string;
-}
-
-interface EventDescription {
-  success: boolean;
-  data: {
-    description: string;
-    image: boolean | string;
-  };
-}
+import {
+  CalendarEvent,
+  CalendarEventSchema,
+  CalendarParams,
+  CalendarSchema,
+  EventDescription
+} from './types';
 
 export class CalendarClient {
-  private readonly baseUrl = 'https://oversightesports.com/wp-admin/admin-ajax.php';
+  private readonly baseUrl = 'https://oversightesports.com';
+  private readonly endpoints = {
+    adminAjax: '/wp-admin/admin-ajax.php',
+    calendar: '/calendar/',
+  };
+  private nonce: string | null = null;
   private readonly commonHeaders = {
     accept: '*/*',
     'accept-language': 'en-US,en;q=0.9',
@@ -36,22 +32,75 @@ export class CalendarClient {
     'x-requested-with': 'XMLHttpRequest',
   };
 
+  private async fetchNonce(): Promise<string> {
+    const response = await fetch(`${this.baseUrl}${this.endpoints.calendar}`, {
+      headers: {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'accept-language': 'en-US,en;q=0.9',
+        'user-agent': this.commonHeaders['user-agent'],
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch calendar page');
+    }
+
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    
+    // Look through all <script> tags for the nonce pattern
+    const scripts = $('script');
+    
+    for (let i = 0; i < scripts.length; i++) {
+      const scriptContent = $(scripts[i]).html();
+      
+      if (scriptContent?.includes('nonce')) {
+        const match = scriptContent.match(/["']nonce["']\s*:\s*["']([a-f0-9]+)["']/i);
+        if (match) {
+          return match[1]; // the nonce value
+        }
+      }
+    }
+
+    throw new Error('Could not find nonce in calendar page');
+  }
+
+  private async getNonce(): Promise<string> {
+    if (!this.nonce) {
+      this.nonce = await this.fetchNonce();
+    }
+    return this.nonce;
+  }
+
+  private async refreshNonceIfNeeded(error: Error): Promise<boolean> {
+    if (error.message.includes('Forbidden')) {
+      this.nonce = await this.fetchNonce();
+      return true;
+    }
+    return false;
+  }
+
   private async fetchEventDescription(eventObjectId: string): Promise<string | undefined> {
     const formData = new URLSearchParams({
       action: 'sugar_calendar_event_popover',
       event_object_id: eventObjectId,
-      nonce: '327f22477f',
+      nonce: await this.getNonce(),
     });
 
     try {
-      const response = await fetch(this.baseUrl, {
+      const response = await fetch(`${this.baseUrl}${this.endpoints.adminAjax}`, {
         method: 'POST',
         headers: this.commonHeaders,
         body: formData.toString(),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch event description: ${response.statusText}`);
+        const error = new Error(`Failed to fetch event description: ${response.statusText}`);
+        if (await this.refreshNonceIfNeeded(error)) {
+          // Retry once with new nonce
+          return this.fetchEventDescription(eventObjectId);
+        }
+        throw error;
       }
 
       const data = (await response.json()) as EventDescription;
@@ -86,72 +135,82 @@ export class CalendarClient {
       'calendar_block[visitor_tz]': 'America/Chicago',
       'calendar_block[updateDisplay]': 'false',
       'calendar_block[action]': '',
-      nonce: '327f22477f',
+      nonce: await this.getNonce(),
     });
 
-    const response = await fetch(this.baseUrl, {
-      method: 'POST',
-      headers: this.commonHeaders,
-      body: formData.toString(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch calendar: ${response.statusText}`);
-    }
-
-    const rawData = await response.json();
-    const result = CalendarSchema.safeParse(rawData);
-
-    if (!result.success) {
-      throw new Error(`Invalid calendar response: ${result.error.message}`);
-    }
-
-    const html = result.data.data.body;
-    const $ = cheerio.load(html);
-    const events: CalendarEvent[] = [];
-
-    for (const el of $('.sugar-calendar-block__event-cell').toArray()) {
-      const $el = $(el);
-
-      const title = $el.find('.sugar-calendar-block__event-cell__title').text().trim();
-      const timeElems = $el.find('time');
-
-      const startTime = timeElems.eq(0).attr('datetime') || null;
-      const endTime = timeElems.eq(1).attr('datetime') || null;
-      const eventObjectId = $el.attr('data-eventobjid') || '';
-
-      // Try to parse accent color from data-calendarsinfo JSON string
-      const calendarsInfoRaw = $el.attr('data-calendarsinfo');
-      let accentColor: string | undefined;
-
-      try {
-        if (calendarsInfoRaw) {
-          const parsed = JSON.parse(calendarsInfoRaw.replace(/&quot;/g, '"'));
-          accentColor = parsed.primary_event_color;
-        }
-      } catch (err) {
-        console.warn(`Failed to parse calendar info for "${title}"`);
-      }
-
-      // Fetch description for the event
-      const description = await this.fetchEventDescription(eventObjectId);
-
-      const parsedEvent = CalendarEventSchema.safeParse({
-        title,
-        startTime,
-        endTime,
-        accentColor,
-        eventObjectId,
-        description,
+    try {
+      const response = await fetch(`${this.baseUrl}${this.endpoints.adminAjax}`, {
+        method: 'POST',
+        headers: this.commonHeaders,
+        body: formData.toString(),
       });
 
-      if (parsedEvent.success) {
-        events.push(parsedEvent.data);
-      } else {
-        console.warn('Invalid event skipped:', parsedEvent.error.format());
+      if (!response.ok) {
+        const error = new Error(`Failed to fetch calendar: ${response.statusText}`);
+        if (await this.refreshNonceIfNeeded(error)) {
+          // Retry once with new nonce
+          return this.fetchCalendar({ day, month, year, calendarId });
+        }
+        throw error;
       }
-    }
 
-    return events;
+      const rawData = await response.json();
+      const result = CalendarSchema.safeParse(rawData);
+
+      if (!result.success) {
+        throw new Error(`Invalid calendar response: ${result.error.message}`);
+      }
+
+      const html = result.data.data.body;
+      const $ = cheerio.load(html);
+      const events: CalendarEvent[] = [];
+
+      for (const el of $('.sugar-calendar-block__event-cell').toArray()) {
+        const $el = $(el);
+
+        const title = $el.find('.sugar-calendar-block__event-cell__title').text().trim();
+        const timeElems = $el.find('time');
+
+        const startTime = timeElems.eq(0).attr('datetime') || null;
+        const endTime = timeElems.eq(1).attr('datetime') || null;
+        const eventObjectId = $el.attr('data-eventobjid') || '';
+
+        // Try to parse accent color from data-calendarsinfo JSON string
+        const calendarsInfoRaw = $el.attr('data-calendarsinfo');
+        let accentColor: string | undefined;
+
+        try {
+          if (calendarsInfoRaw) {
+            const parsed = JSON.parse(calendarsInfoRaw.replace(/&quot;/g, '"'));
+            accentColor = parsed.primary_event_color;
+          }
+        } catch (err) {
+          console.warn(`Failed to parse calendar info for "${title}"`);
+        }
+
+        // Fetch description for the event
+        const description = await this.fetchEventDescription(eventObjectId);
+
+        const parsedEvent = CalendarEventSchema.safeParse({
+          title,
+          startTime,
+          endTime,
+          accentColor,
+          eventObjectId,
+          description,
+        });
+
+        if (parsedEvent.success) {
+          events.push(parsedEvent.data);
+        } else {
+          console.warn('Invalid event skipped:', parsedEvent.error.format());
+        }
+      }
+
+      return events;
+    } catch (err) {
+      console.warn('Failed to fetch calendar:', err);
+      throw err;
+    }
   }
 }
