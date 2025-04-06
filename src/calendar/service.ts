@@ -1,24 +1,20 @@
+import { AttachmentBuilder } from 'discord.js';
 import { env } from '../env';
-import { CalendarClient } from './client';
+import { fetchCalendar } from './client';
 import { renderCalendarEvents } from './render';
 
-export class CalendarService {
-  private readonly client: CalendarClient;
+export const getCalendarImage = async () => {
+  // Get current date
+  const now = new Date();
+  const events = await fetchCalendar({
+    day: now.getDate(),
+    month: now.getMonth() + 1, // JavaScript months are 0-based
+    year: now.getFullYear(),
+    calendarId: env.CALENDAR_ID,
+  });
 
-  constructor() {
-    this.client = new CalendarClient();
-  }
+  const buffer = await renderCalendarEvents(events);
+  console.log(`Calendar rendered (${(buffer.length / 1024).toFixed(1)} KB)`);
 
-  async getCalendarImage(): Promise<Buffer> {
-    // Get current date
-    const now = new Date();
-    const events = await this.client.fetchCalendar({
-      day: now.getDate(),
-      month: now.getMonth() + 1, // JavaScript months are 0-based
-      year: now.getFullYear(),
-      calendarId: env.CALENDAR_ID,
-    });
-
-    return renderCalendarEvents(events);
-  }
-}
+  return new AttachmentBuilder(buffer, { name: 'calendar.png' });
+};

@@ -3,12 +3,14 @@ import { cloneElement, isValidElement, type h } from 'preact';
 import { Children } from 'preact/compat';
 import satori from 'satori';
 import { tailwindToCSS, type TailwindConfig } from 'tw-to-css';
-import { Calendar, Event } from './components/calendar';
+import { Calendar } from './components/calendar';
+import type { CalendarEvent } from './types';
 
 const WIDTH = 1920;
 const HEIGHT = 1080;
 
-function inlineTailwind(el: h.JSX.Element): h.JSX.Element {
+const inlineTailwind = (el: h.JSX.Element) => {
+  console.log('Processing Tailwind styles...');
   const config: TailwindConfig = {
     theme: {},
     plugins: [],
@@ -24,13 +26,12 @@ function inlineTailwind(el: h.JSX.Element): h.JSX.Element {
   const processedChildren = Children.map(children, (child) =>
     isValidElement(child) ? inlineTailwind(child as h.JSX.Element) : child,
   );
-  // Return cloned element with updated props
-  return cloneElement(el, { ...props, style: mergedStyle }, processedChildren);
-}
 
-export async function renderCalendarEvents(events: Event[]): Promise<Buffer> {
-  const element = Calendar({ events });
-  const jsx = inlineTailwind(element);
+  return cloneElement(el, { ...props, style: mergedStyle }, processedChildren);
+};
+
+export const renderCalendarEvents = async (events: CalendarEvent[]) => {
+  const jsx = Calendar({ events });
 
   const svg = await satori(jsx, {
     width: WIDTH,
@@ -51,8 +52,7 @@ export async function renderCalendarEvents(events: Event[]): Promise<Buffer> {
     ],
   });
 
-  // Convert SVG to PNG buffer
   const resvg = new Resvg(svg);
   const pngData = resvg.render();
   return pngData.asPng();
-}
+};
