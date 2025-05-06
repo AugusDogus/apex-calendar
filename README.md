@@ -23,6 +23,7 @@ Apex Calendar Bot is a Discord bot that helps you keep track of Apex Legends eve
 - 📅 Displays a beautiful calendar of Apex Legends events
 - 🔄 Automatically updates calendar information
 - 🎮 Shows event details including times and descriptions
+- 🌍 Configurable timezone support
 - 🔒 Secure command system with permission controls
 
 ## Commands
@@ -53,11 +54,24 @@ If you want to host the bot yourself:
    ```env
    DISCORD_TOKEN=your_bot_token
    DATABASE_PATH=./data  # Directory where SQLite database will be stored
+   TIMEZONE=America/Los_Angeles  # Optional: Set your preferred timezone (defaults to America/Los_Angeles)
    ```
 4. Run the bot:
    ```bash
    bun start
    ```
+
+### Timezone Configuration
+
+The bot supports displaying events in your preferred timezone. You can set this using the `TIMEZONE` environment variable. The timezone should be specified using the IANA timezone database format. Some common examples:
+
+- `America/Los_Angeles` - Pacific Time (default)
+- `America/New_York` - Eastern Time
+- `Europe/London` - British Time
+- `Asia/Tokyo` - Japan Time
+- `Australia/Sydney` - Australian Eastern Time
+
+You can find a complete list of supported timezone names [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
 ## Docker
 
@@ -67,6 +81,7 @@ The easiest way to run the bot is using our pre-built Docker image:
 docker run -d \
   -e DISCORD_TOKEN=your_bot_token \
   -e DATABASE_PATH=/data \
+  -e TIMEZONE=America/Los_Angeles \
   -v /path/to/your/data:/data \
   ghcr.io/augusdogus/apex-calendar:latest
 ```
@@ -82,6 +97,7 @@ docker build -t apex-calendar .
 docker run -d \
   -e DISCORD_TOKEN=your_bot_token \
   -e DATABASE_PATH=/data \
+  -e TIMEZONE=America/Los_Angeles \
   -v /path/to/your/data:/data \
   apex-calendar
 ```

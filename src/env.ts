@@ -7,6 +7,7 @@ export const env = createEnv({
     DISCORD_TOKEN: z.string(),
     interval: z.coerce.number().int().positive().optional().default(60),
     DATABASE_PATH: z.string().optional().default('./'),
+    TIMEZONE: z.string().optional().default('America/Los_Angeles'),
   },
   runtimeEnv: process.env,
 });

@@ -1,5 +1,7 @@
 import { eachDayOfInterval, endOfMonth, format, isSameDay, isSameMonth, parseISO, startOfMonth } from "date-fns";
+import { toZonedTime } from 'date-fns-tz';
 import React from "preact";
+import { env } from "../../env";
 
 declare module 'preact' {
     namespace JSX {
@@ -23,8 +25,8 @@ interface EventCardProps {
 }
 
 function EventCard({ event }: EventCardProps) {
-    const startTime = event.startTime ? parseISO(event.startTime) : new Date();
-    const endTime = event.endTime ? parseISO(event.endTime) : new Date();
+    const startTime = event.startTime ? toZonedTime(parseISO(event.startTime), env.TIMEZONE) : new Date();
+    const endTime = event.endTime ? toZonedTime(parseISO(event.endTime), env.TIMEZONE) : new Date();
     const color = event.accentColor || '#ff7b00';
 
     const formatTime = (date: Date) => {
@@ -56,7 +58,8 @@ interface CalendarProps {
 }
 
 export function Calendar({ events }: CalendarProps) {
-    const currentMonth = new Date(); // Use current date instead of hardcoded date
+    const now = new Date();
+    const currentMonth = toZonedTime(now, env.TIMEZONE);
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -64,7 +67,7 @@ export function Calendar({ events }: CalendarProps) {
     const getEventsForDay = (day: Date) => {
         return events.filter((event) => {
             if (!event.startTime) return false;
-            const eventDate = parseISO(event.startTime);
+            const eventDate = toZonedTime(parseISO(event.startTime), env.TIMEZONE);
             return isSameDay(eventDate, day);
         });
     };
