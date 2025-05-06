@@ -56,7 +56,7 @@ interface CalendarProps {
 }
 
 export function Calendar({ events }: CalendarProps) {
-    const currentMonth = new Date(2025, 3, 1); // April 2025 (months are 0-indexed)
+    const currentMonth = new Date(); // Use current date instead of hardcoded date
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
