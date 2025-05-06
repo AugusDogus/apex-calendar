@@ -46,7 +46,7 @@ function EventCard({ event }: EventCardProps) {
                     <span>{formatTime(endTime)}</span>
                 </div>
             </div>
-            <span tw={`text-xs text-neutral-800 ${event.title.length > 25 ? '' : '-mt-3'}`}>{event.description || "Groups A+B"}</span>
+            <span tw={`text-xs text-neutral-800 ${event.title.length > 21 ? '' : '-mt-3'}`}>{event.description}</span>
         </div>
     );
 }
